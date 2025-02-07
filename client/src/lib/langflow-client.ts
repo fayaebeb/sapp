@@ -1,20 +1,17 @@
 import { Message } from "@shared/schema";
 
 export class LangflowClient {
-  constructor(private baseURL: string, private applicationToken: string) {}
-
-  async post(endpoint: string, body: any, headers: Record<string, string> = { "Content-Type": "application/json" }) {
-    headers["Authorization"] = `Bearer ${this.applicationToken}`;
-    const url = `${this.baseURL}${endpoint}`;
-
+  async post(endpoint: string, body: any) {
     try {
-      const response = await fetch(url, {
+      const response = await fetch(endpoint, {
         method: 'POST',
-        headers: headers,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
+        credentials: 'include'
       });
+
       const responseMessage = await response.json();
-      if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${JSON.stringify(responseMessage)}`);
+      if (!response.ok) throw new Error(responseMessage.message || `${response.status} ${response.statusText}`);
       return responseMessage;
     } catch (error) {
       console.error('Request Error:', error);
@@ -24,7 +21,7 @@ export class LangflowClient {
 
   async runFlow(flowId: string, langflowId: string, message: string): Promise<string> {
     try {
-      const response = await this.post(`/lf/${langflowId}/api/v1/run/${flowId}`, {
+      const response = await this.post(`/api/langflow/${langflowId}/run/${flowId}`, {
         input_value: message,
         input_type: 'chat',
         output_type: 'chat',
@@ -43,10 +40,22 @@ export class LangflowClient {
         stream: false
       });
 
+      console.log('Langflow API Response:', JSON.stringify(response, null, 2));
+
+      // Check if response is in the expected format
+      if (response?.result) {
+        return response.result;
+      }
+
       if (response?.outputs?.[0]?.outputs?.[0]?.message?.text) {
         return response.outputs[0].outputs[0].message.text;
       }
 
+      if (response?.outputs?.[0]?.message?.text) {
+        return response.outputs[0].message.text;
+      }
+
+      console.error('Unexpected response format:', response);
       throw new Error('Invalid response format from Langflow API');
     } catch (error) {
       console.error('Error running flow:', error);
@@ -55,8 +64,4 @@ export class LangflowClient {
   }
 }
 
-// Use Vite's environment variable syntax
-export const langflowClient = new LangflowClient(
-  'https://api.langflow.astra.datastax.com',
-  import.meta.env.VITE_LANGFLOW_TOKEN || ''
-);
+export const langflowClient = new LangflowClient();
