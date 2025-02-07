@@ -56,10 +56,10 @@ export function registerRoutes(app: Express): Server {
       }
 
       // Extract the message from the response
-      if (data?.outputs?.[0]?.outputs?.[0]?.message?.text) {
-        data.result = data.outputs[0].outputs[0].message.text;
-      } else if (data?.outputs?.[0]?.message?.text) {
-        data.result = data.outputs[0].message.text;
+      if (data?.outputs?.[0]?.outputs?.[0]?.results?.message?.text) {
+        data.result = data.outputs[0].outputs[0].results.message.text;
+      } else if (data?.outputs?.[0]?.outputs?.[0]?.artifacts?.message) {
+        data.result = data.outputs[0].outputs[0].artifacts.message;
       }
 
       res.json(data);

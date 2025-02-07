@@ -42,17 +42,13 @@ export class LangflowClient {
 
       console.log('Langflow API Response:', JSON.stringify(response, null, 2));
 
-      // Check if response is in the expected format
-      if (response?.result) {
-        return response.result;
+      // Extract message from the response using the correct path
+      if (response?.outputs?.[0]?.outputs?.[0]?.results?.message?.text) {
+        return response.outputs[0].outputs[0].results.message.text;
       }
 
-      if (response?.outputs?.[0]?.outputs?.[0]?.message?.text) {
-        return response.outputs[0].outputs[0].message.text;
-      }
-
-      if (response?.outputs?.[0]?.message?.text) {
-        return response.outputs[0].message.text;
+      if (response?.outputs?.[0]?.outputs?.[0]?.artifacts?.message) {
+        return response.outputs[0].outputs[0].artifacts.message;
       }
 
       console.error('Unexpected response format:', response);
