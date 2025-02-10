@@ -6,6 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// ミドルウェアでリクエストのロギングを設定
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -36,7 +37,9 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
+// 初期化関数：ルート登録、エラーハンドリング、Vite または静的ファイルの設定を行う
+async function initialize() {
+  // APIルートなどを登録
   const server = registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -47,19 +50,26 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // 開発環境では Vite をセットアップし、それ以外は静的ファイルを配信する
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
+  return server;
+}
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client
-  const PORT = 5000;
-  server.listen(PORT, "0.0.0.0", () => {
-    log(`serving on port ${PORT}`);
+// ローカル開発時のみサーバーを起動
+if (!process.env.VERCEL) {
+  initialize().then((server) => {
+    const PORT = 5000;
+    server.listen(PORT, "0.0.0.0", () => {
+      log(`serving on port ${PORT}`);
+    });
+  }).catch(err => {
+    console.error("Error initializing server:", err);
   });
-})();
+}
+
+// Vercel 用に Express アプリをエクスポート
+export default app;
