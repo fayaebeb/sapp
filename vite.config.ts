@@ -13,14 +13,14 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "client", "src"),
-      "@shared": path.resolve(__dirname, "shared"),
-    },
+      "@shared": path.resolve(__dirname, "shared")
+    }
   },
-  // Frontend source is in the client folder
+  // Frontend source is in the "client" folder
   root: path.resolve(__dirname, "client"),
   build: {
-    // Build output will go to dist/public
+    // Build output will go to "dist/public"
     outDir: path.resolve(__dirname, "dist/public"),
-    emptyOutDir: true,
-  },
+    emptyOutDir: true
+  }
 });

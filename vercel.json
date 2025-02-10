@@ -3,23 +3,12 @@
       {
         "src": "api/index.js",
         "use": "@vercel/node"
-      },
-      {
-        "src": "dist/public/**",
-        "use": "@vercel/static"
       }
     ],
     "routes": [
       {
-        "src": "/api/(.*)",
-        "dest": "/api/index.js"
-      },
-      {
-        "handle": "filesystem"
-      },
-      {
         "src": "/(.*)",
-        "dest": "/dist/public/index.html"
+        "dest": "/api/index.js"
       }
     ]
   }
